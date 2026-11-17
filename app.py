@@ -6,8 +6,18 @@ from flask_cors import CORS
 from simple_websocket.ws import Server
 import os
 import json
-from chatbot_logic import business_logic
+from voicebot_logic import business_logic
 from dotenv import load_dotenv
+from datetime import datetime
+
+class VoiceChunk(TypedDict):
+    type: Literal['user_audio']
+    speech_end:bool
+    recordStartRef:str
+    voice:str
+
+VoiceState = Dict[str, List[VoiceChunk]]
+    
 
 load_dotenv(override=True)
 
@@ -45,6 +55,7 @@ def test():
 @sock.route("/ws")
 def websocket(ws:Server):
     try:
+        voice_state:VoiceState = {}
         while True:
             msg = str(ws.receive())
             msg = json.loads(msg)
